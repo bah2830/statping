@@ -18,13 +18,14 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
+	"time"
+
 	"github.com/ararog/timeago"
 	"github.com/hunterlong/statping/core/notifier"
 	"github.com/hunterlong/statping/types"
 	"github.com/hunterlong/statping/utils"
-	"sort"
-	"strconv"
-	"time"
 )
 
 type Service struct {
@@ -252,16 +253,21 @@ func Dbtimestamp(group string, column string) string {
 
 // Downtime returns the amount of time of a offline service
 func (s *Service) Downtime() time.Duration {
-	hits, _ := s.Hits()
-	fail := s.lastFailure()
-	if fail == nil {
-		return time.Duration(0)
+	// If failuretime was never set revert to previous method.
+	if s.FailureTime.IsZero() {
+		hits, _ := s.Hits()
+		fail := s.lastFailure()
+		if fail == nil {
+			return time.Duration(0)
+		}
+		if len(hits) == 0 {
+			return time.Now().UTC().Sub(fail.CreatedAt.UTC())
+		}
+		since := fail.CreatedAt.UTC().Sub(fail.CreatedAt.UTC())
+		return since
 	}
-	if len(hits) == 0 {
-		return time.Now().UTC().Sub(fail.CreatedAt.UTC())
-	}
-	since := fail.CreatedAt.UTC().Sub(fail.CreatedAt.UTC())
-	return since
+
+	return time.Since(s.FailureTime)
 }
 
 // GraphDataRaw will return all the hits between 2 times for a Service

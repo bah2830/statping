@@ -60,6 +60,7 @@ type Service struct {
 	Failures            []FailureInterface `gorm:"-" json:"failures,omitempty"`
 	Checkins            []CheckinInterface `gorm:"-" json:"checkins,omitempty"`
 	CurrentFailureCount int                `gorm:"-" json:"-"`
+	FailureTime         time.Time          `gorm:"-" json:"-"`
 }
 
 // BeforeCreate for Service will set CreatedAt to UTC

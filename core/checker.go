@@ -18,16 +18,17 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"github.com/hunterlong/statping/core/notifier"
-	"github.com/hunterlong/statping/types"
-	"github.com/hunterlong/statping/utils"
-	"github.com/tatsushid/go-fastping"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/hunterlong/statping/core/notifier"
+	"github.com/hunterlong/statping/types"
+	"github.com/hunterlong/statping/utils"
+	"github.com/tatsushid/go-fastping"
 )
 
 // checkServices will start the checking go routine for each service
@@ -263,6 +264,7 @@ func recordSuccess(s *Service) {
 	s.CreateHit(hit)
 	notifier.OnSuccess(s.Service)
 	s.Online = true
+	s.FailureTime = time.Time{}
 	s.SuccessNotified = true
 	s.CurrentFailureCount = 0
 }
@@ -278,6 +280,12 @@ func recordFailure(s *Service, issue string) {
 	}}
 	utils.Log(2, fmt.Sprintf("Service %v Failing: %v | Lookup in: %0.2f ms", s.Name, issue, fail.PingTime*1000))
 	s.CreateFailure(fail)
+
+	// Log the time of the first failure noticed
+	if s.Online {
+		s.FailureTime = time.Now().UTC()
+	}
+
 	s.Online = false
 	s.SuccessNotified = false
 	s.UpdateNotify = CoreApp.UpdateNotify.Bool
