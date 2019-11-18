@@ -17,7 +17,6 @@ dart-sass
 public
 assets
 *.log
-.env
 logs
 /dev/test/node_modules
 dev/test/cypress/videos
