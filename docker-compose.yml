@@ -1,10 +1,45 @@
-statping:
-  container_name: statping
-  image: hunterlong/statping
-  restart: always
-  ports:
-    - 8080:8080
-  volumes:
-    - ./statping:/app
-  environment:
-    DB_CONN: sqlite
+version: '3.5'
+
+services:
+
+  mariadb:
+    image: linuxserver/mariadb
+    restart: always
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Etc/UTC
+      MYSQL_ROOT_PASSWORD: "statping"
+      MYSQL_USER: statping
+      MYSQL_PASSWORD: statping
+      MYSQL_DATABASE: "statping"
+    volumes:
+      - "${STATPING_MYSQL_DATA}:/config"
+    networks:
+      - backend
+
+  statping:
+    build: .
+    restart: always
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PORT: ${VIRTUAL_PORT}
+      NAME: Internal Monitor
+      DESCRIPTION: Internal services monitor
+      DB_CONN: mysql
+      DB_HOST: mariadb
+      DB_USER: statping
+      DB_PASS: statping
+      DB_DATABASE: statping
+    ports:
+      - "8999:8080"
+    volumes:
+      - "${STATPING_DATA}:/app"
+    networks:
+      - backend
+    depends_on:
+      - "mariadb"
+
+networks:
+  backend:
+    external: false

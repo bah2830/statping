@@ -97,7 +97,6 @@ func LoadUsingEnv() (*DbConfig, error) {
 		})
 		_, err := admin.Create()
 
-		SampleData()
 		return Configs, err
 	}
 	return Configs, nil
