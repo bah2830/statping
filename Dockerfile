@@ -1,4 +1,4 @@
-FROM golang:1.12
+FROM golang:1.13
 
 ENV IS_DOCKER=true
 ENV STATPING_DIR=/app
